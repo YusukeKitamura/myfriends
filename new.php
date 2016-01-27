@@ -37,10 +37,11 @@
     $age          = htmlspecialchars($_POST['age']);
 
     //データ追加
-    $sql = 'INSERT INTO `friends`(`friend_name`, `area_id`, `gender`, `age`, `created`) VALUES ("'
+    $sql = 'INSERT INTO `friends`(`friend_id`, `friend_name`, `area_id`, `gender`, `age`, `created`) VALUES (null,"'
       .$friend_name.'",'.$area_id.','.$gender.','.$age.',now())';
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
+    header('location: index.php');
   }
 
   $dbh = null;
