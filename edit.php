@@ -49,9 +49,8 @@
 
     //データ追加
     $sql = 'UPDATE `friends` SET `friend_name`="'.$friend_name.'", `area_id`='.$area_id.
-            ', `gender`='.$gender.', `age`='.$age.', `modified`=now() WHERE `friend_id`='.$friend_id; 
+            ', `gender`='.$gender.', `age`='.$age.' WHERE `friend_id`='.$friend_id; 
     $stmt = $dbh->prepare($sql);
-    var_dump($sql);
     $stmt->execute();
     header('location: index.php');
   }

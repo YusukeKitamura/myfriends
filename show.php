@@ -17,6 +17,15 @@
   $stmt->execute();
   $area = $stmt->fetch(PDO::FETCH_ASSOC);
 
+  if (isset($_GET['action']) && !empty($_GET['action']) ) {
+    if ($_GET['action'] == 'delete') {
+      $sql  = 'DELETE FROM `friends` WHERE `friend_id`='.$_GET['friend_id'];
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute();
+      header('location: index.php');
+    }
+  }
+
   //友達リストを表示するための処理
   $sql = 'SELECT * FROM `friends` WHERE `area_id`='.$area_id;
   $stmt = $dbh->prepare($sql);
@@ -37,6 +46,23 @@
       $female++;
     }
     $friends[] = $rec;
+  }
+
+  //男女の平均年齢算出
+  $sql = 'SELECT `areas`.`area_id`, `friends`.`gender`, ROUND(AVG(`friends`.`age`), 2) AS friend_avg FROM `areas` LEFT OUTER JOIN `friends` ON 
+          `areas`.`area_id`=`friends`.`area_id` WHERE `areas`.`area_id`= '.$area_id.' GROUP BY `friends`.`gender`';
+  $stmt = $dbh->prepare($sql);
+  $stmt->execute();
+  
+  $male_avg = '';
+  $female_avg = '';
+  if ($male > 0) {
+    $male_rec = $stmt->fetch(PDO::FETCH_ASSOC);
+    $male_avg = $male_rec['friend_avg'];
+  }
+  if ($female > 0) {
+    $female_rec = $stmt->fetch(PDO::FETCH_ASSOC);
+    $female_avg = $female_rec['friend_avg'];
   }
 
   $dbh = null;
@@ -65,6 +91,20 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <!-- Javascript -->
+    <script type="text/javascript">
+      function destroy(friend_id, area_id) {
+        // alert('こんにちは');
+        if (confirm('削除しますか？')) {
+          //OKボタンを押したとき
+          location.href = 'show.php?action=delete&friend_id='+friend_id+'&area_id='+area_id;
+          return true;
+        } else {
+          //キャンセルボタンを押したとき
+          return false;
+        }
+      }
+    </script>
 
   </head>
   <body>
@@ -95,6 +135,12 @@
       <div class="col-md-4 content-margin-top">
       <legend><?php echo $area['area_name']; ?>の友達</legend>
       <div class="well">男性：<?php echo $male; ?>名　女性：<?php echo $female; ?>名</div>
+      <?php if($male_avg) { ?>
+      <div class="well">男性の平均年齢：<?php echo $male_avg; ?>歳</div>
+      <?php }
+       if($female_avg) { ?>
+      <div class="well">女性の平均年齢：<?php echo $female_avg; ?>歳</div>
+      <?php } ?>
         <table class="table table-striped table-hover table-condensed">
           <thead>
             <tr>
@@ -112,7 +158,8 @@
               <td>
                 <div class="text-center">
                   <a href="edit.php?friend_id=<?php echo $friend['friend_id'];?>"><i class="fa fa-pencil"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                  <a href="javascript:void(0);" onclick="destroy();"><i class="fa fa-trash"></i></a>
+                  <!-- <a href="javascript:void(0);" onclick="destroy();"><i class="fa fa-trash"></i></a> -->
+                  <a href="#" onclick="destroy(<?php echo $friend['friend_id'].','.$_GET['area_id'] ?>);"><i class="fa fa-trash"></i></a>
                 </div>
               </td>
             </tr>
